@@ -8,7 +8,7 @@ Have a look for our Crypto App
 
 ## Screenshot Attached Below
 
-<img src = "Screenshots/cryptoapp.png" width = "20px" >
+<img src = "Screenshots/cryptoApp.png" width = "20px" >
 
 ### Your contribution will be grateful.
 
