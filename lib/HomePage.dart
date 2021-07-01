@@ -1,15 +1,33 @@
+import 'package:crypto_app/modules/crypto_presenter.dart';
 import 'package:flutter/material.dart';
 
+import 'data/crypto_data.dart';
+
 class HomePage extends StatefulWidget {
-  final List currencies;
-  HomePage(this.currencies);
+  // final List currencies;
+  // HomePage(this.currencies);
   @override
   _HomePageState createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> implements CryptoListViewContract {
+  late CryptoListPresenter _presenter;
+  List<Crypto> _currencies = [];
+  bool _isLoading = false ;
+
   final List<MaterialColor> _colors = [Colors.blue, Colors.red, Colors.indigo];
   TextEditingController controller = TextEditingController();
+
+  _HomePageState() {
+    _presenter = CryptoListPresenter.inj(this);
+  }
+
+  @override 
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _presenter.loadCurrencies();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +40,9 @@ class _HomePageState extends State<HomePage> {
         ),
         actions: [IconButton(onPressed: () {}, icon: Icon(Icons.search))],
       ),
-      body: _cryptoWidget(),
+      body: _isLoading ? Center(
+        child: CircularProgressIndicator(),
+      ) : _cryptoWidget(),
     );
   }
 
@@ -32,9 +52,9 @@ class _HomePageState extends State<HomePage> {
         children: [
           Flexible(
               child: ListView.builder(
-                  itemCount: widget.currencies.length,
+                  itemCount: _currencies.length,
                   itemBuilder: (BuildContext context, int index) {
-                    final Map currency = widget.currencies[index];
+                    final Crypto currency = _currencies[index];
                     final MaterialColor color = _colors[index % _colors.length];
                     return _getListItemUi(currency, color);
                   })),
@@ -43,18 +63,17 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  ListTile _getListItemUi(Map currency, MaterialColor color) {
+  ListTile _getListItemUi(Crypto currency, MaterialColor color) {
     return ListTile(
       leading: CircleAvatar(
         backgroundColor: color,
-        child: Text(currency["name"][0]),
+        child: Text(currency.name![0]),
       ),
       title: Text(
-        currency["name"],
+        currency.name!,
         style: TextStyle(fontWeight: FontWeight.bold),
       ),
-      subtitle:
-          _getSubtitleText(currency["price_usd"], currency["volume_1hrs_usd"]),
+      subtitle: _getSubtitleText(currency.price_usd, currency.volume_1hrs_usd),
       isThreeLine: true,
     );
   }
@@ -75,5 +94,19 @@ class _HomePageState extends State<HomePage> {
     return RichText(
       text: TextSpan(children: [getPriceWidget, percentageChangeTextWidget]),
     );
+  }
+
+  @override
+  void onLoadCryptoComplete(List<Crypto> items) {
+    // TODO: implement onLoadCryptoComplete
+    setState(() {
+      _currencies = items;
+      _isLoading = true;
+    });
+  }
+
+  @override
+  void onLoadCryptoError() {
+    // TODO: implement onLoadCryptoError
   }
 }
